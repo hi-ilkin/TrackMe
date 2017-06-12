@@ -46,9 +46,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -56,6 +60,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+
+import static com.mobileapplecture.ilkin.trackme.R.dimen.standard_150;
+import static com.mobileapplecture.ilkin.trackme.R.dimen.standard_75;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, Fragment2Activity {
 
@@ -107,12 +114,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //default values
     public static final boolean DEFAULT_ON_OFF = true;
     public static final boolean DEFAULT_SPEED = true;
-    public static final int DEFAULT_GPS_FREQ = 1;
 
     // key values
     public static final String KEY_ON_OFF = "key_onOff";
     public static final String KEY_SPEED = "key_speed";
-    public static final String KEY_GPS_FREQ = "key_gpsFreq";
 
     private float total_speed = 0;
     private double max_speed = 0;
@@ -194,10 +199,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         setServiceActivated(sharedPreferences.getBoolean(KEY_ON_OFF, DEFAULT_ON_OFF));
         setShowSpeedActivated(sharedPreferences.getBoolean(KEY_SPEED, DEFAULT_SPEED));
-        int val = sharedPreferences.getInt(KEY_GPS_FREQ, DEFAULT_GPS_FREQ);
 
 
-        Log.e(TAG, "I got: " + isServiceActivated + ", " + isShowSpeedActivated() + ", " + val);
         try {
             showSpeeds();
         } catch (IOException e) {
@@ -233,9 +236,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // fab menu is not opened
                 if (!isExpanded) {
                     fab_expand_more.animate().rotation(135);
-                    fab_favorites.animate().translationY(-getResources().getDimension(R.dimen.standard_75));
-                    fab_settings.animate().translationY(-getResources().getDimension(R.dimen.standard_75));
-                    fab_settings.animate().translationX(-getResources().getDimension(R.dimen.standard_75));
+                    fab_favorites.animate().translationY(-getResources().getDimension(standard_75));
+                    fab_settings.animate().translationY(-getResources().getDimension(standard_150));
                     isExpanded = true;
                 }
                 // fab menu is expanded
@@ -275,6 +277,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 if (mMap != null) {
                     createFavPlaces();
+                    dateRange();
                 } else {
                     AlertDialog.Builder alert = new AlertDialog.Builder(MapsActivity.this);
                     alert.setTitle("Map is not Ready for drawing");
@@ -301,7 +304,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         fab_favorites.animate().translationY(0);
         fab_settings.animate().translationY(0);
-        fab_settings.animate().translationX(0);
         fab_expand_more.animate().rotation(0);
 
     }
@@ -326,7 +328,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 setInitialDisplay(false);
             }
             total_speed += cur_speed;
-            Log.e(TAG, String.valueOf(cur_speed));
 
             instance_count++;
             avg_speed = total_speed / instance_count;
@@ -343,7 +344,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         public void onReceive(Context context, Intent intent) {
             boolean status = intent.getBooleanExtra("b_status", true);
-            Log.e(TAG, "Data from batterBroadcast " + status);
             setServiceActivated(status);
         }
     };
@@ -491,7 +491,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
         }
     }
-
+    Cursor cursor;
 
     /**
      * Reads old data from SQLite database and illustrates them
@@ -514,7 +514,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // How you want the results sorted in the resulting Cursor
         String sortOrder = FeedReaderIssues.FeedEntry._ID + " DESC";
 
-        Cursor cursor = db.query(
+         cursor = db.query(
                 FeedReaderIssues.FeedEntry.TABLE_NAME,    // The table to query
                 projection,                               // The columns to return
                 null,                                     // The columns for the WHERE clause
@@ -551,9 +551,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             instance_count++;
 
         }
-        cursor.close();
+//        cursor.close();
     }
+    public void dateRange()
+    {
 
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Log.e(TAG,"Time");
+        cursor.moveToFirst();
+
+        try {
+            Date startDate = format.parse("2017-06-04 17:14:17");
+            Date endDate = format.parse("2017-06-13 17:14:17");
+
+        while (cursor.moveToNext())
+        {
+            String time = cursor.getString((cursor.getColumnIndex(FeedReaderIssues.FeedEntry.COLUMN_TIME)));
+
+                Date date = format.parse(time);
+            if( (date.compareTo(startDate) > 0) && (date.compareTo(endDate) < 0) )
+                Log.e(TAG,time);
+
+        }
+
+    } catch (ParseException e) {
+        e.printStackTrace();
+    }
+    }
 
     private void drawOldLocations(GoogleMap mMap) throws IOException {
 
@@ -626,9 +650,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+
     private void createFavPlaces() {
-
-
 
         if (isFavLocationsActive) {
             int i = 0;

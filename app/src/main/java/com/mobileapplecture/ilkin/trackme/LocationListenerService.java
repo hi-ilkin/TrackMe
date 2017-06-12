@@ -29,8 +29,6 @@ public class LocationListenerService extends Service {
         this.LOCATION_INTERVAL = LOCATION_INTERVAL;
     }
 
-
-    FeedIssuesDBHelper mDbHelper;
     SQLiteDatabase db;
 
 
@@ -113,7 +111,7 @@ public class LocationListenerService extends Service {
         try {
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             setLOCATION_INTERVAL(sharedPreferences.getInt(KEY_GPS_FREQ, DEFAULT_GPS_FREQ) * 1000);
-            Toast.makeText(getBaseContext(), "Interval Value from SharedPref " + LOCATION_INTERVAL, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), "GPS sampling interval is " + LOCATION_INTERVAL/1000+ " second(s)", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.e(TAG, String.valueOf(e));
         }
@@ -157,6 +155,7 @@ public class LocationListenerService extends Service {
         if (isEnabled) {
             mTrackingStatusBuilder.setSmallIcon(R.drawable.ic_tracking_on);
             mTrackingStatusBuilder.setContentTitle("Tracking is Enabled");
+            mTrackingStatusBuilder.setContentText("GPS interval: " +String.valueOf(LOCATION_INTERVAL/1000)+ " seconds");
         } else {
             mTrackingStatusBuilder.setSmallIcon(R.drawable.ic_tracking_off);
             mTrackingStatusBuilder.setContentTitle("Tracking is Disabled");

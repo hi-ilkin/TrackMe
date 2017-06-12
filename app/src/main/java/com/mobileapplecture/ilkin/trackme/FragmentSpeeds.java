@@ -1,10 +1,10 @@
 package com.mobileapplecture.ilkin.trackme;
 
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,12 +32,12 @@ public class FragmentSpeeds extends Fragment {
         return v;
     }
 
-    public void setSpeed(float avg_speed, float cur_speed, double max_speed)
-    {
-        if (txt_cur != null && txt_max != null && txt_avg !=null)
-        {
-        txt_max.setText(String.valueOf(max_speed) + " m/s");
-        txt_avg.setText(String.format("%.3f",avg_speed) + " m/s");
-        txt_cur.setText(String .valueOf(cur_speed)+ " m/s");}
+    @SuppressLint({"SetTextI18n", "DefaultLocale"})
+    public void setSpeed(float avg_speed, float cur_speed, double max_speed) {
+        if (txt_cur != null && txt_max != null && txt_avg != null) {
+            txt_max.setText(String.valueOf(max_speed) + " m/s");
+            txt_avg.setText(String.format("%.3f", avg_speed) + " m/s");
+            txt_cur.setText(String.valueOf(cur_speed) + " m/s");
+        }
     }
 }

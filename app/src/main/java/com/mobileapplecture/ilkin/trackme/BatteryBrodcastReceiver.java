@@ -14,7 +14,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * Created by Ilkin on 11-Jun-17.
@@ -64,8 +63,8 @@ public class BatteryBrodcastReceiver extends Service {
                         // show notificaion to user
                         NotificationCompat.Builder mLowBatteryBuilder = new NotificationCompat.Builder(getBaseContext());
                         mLowBatteryBuilder.setSmallIcon(R.drawable.ic_disabling_tracking);
-                        mLowBatteryBuilder.setContentTitle("Low battery level! Tracking disabled");
-                        mLowBatteryBuilder.setContentText("Your battery level is under 15%");
+                        mLowBatteryBuilder.setContentTitle("Low battery level!");
+                        mLowBatteryBuilder.setContentText("Your battery level is under 15%, tracking is disabled");
                         mLowBatteryBuilder.setTicker("Tracking is Disabled");
                         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
