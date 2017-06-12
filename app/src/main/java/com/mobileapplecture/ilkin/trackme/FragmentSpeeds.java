@@ -21,8 +21,6 @@ public class FragmentSpeeds extends Fragment {
     TextView txt_cur;
     TextView txt_max;
 
-
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -30,7 +28,6 @@ public class FragmentSpeeds extends Fragment {
         txt_avg = (TextView) v.findViewById(R.id.txt_avgSpeed);
         txt_cur = (TextView) v.findViewById(R.id.txt_curSpeed);
         txt_max = (TextView) v.findViewById(R.id.txt_maxSpeed);
-
 
         return v;
     }
@@ -40,7 +37,7 @@ public class FragmentSpeeds extends Fragment {
         if (txt_cur != null && txt_max != null && txt_avg !=null)
         {
         txt_max.setText(String.valueOf(max_speed) + " m/s");
-        txt_avg.setText(String.valueOf(avg_speed) + " m/s");
+        txt_avg.setText(String.format("%.3f",avg_speed) + " m/s");
         txt_cur.setText(String .valueOf(cur_speed)+ " m/s");}
     }
 }

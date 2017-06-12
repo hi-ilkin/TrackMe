@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Created by Ilkin on 03-Jun-17.
@@ -43,6 +45,7 @@ public class FragmentSettings extends Fragment {
 
     // interface which helps to send data from fragment to main activity
     Fragment2Activity fragment2Activity;
+    SharedPreferences sharedPref;
 
     @Nullable
     @Override
@@ -57,11 +60,11 @@ public class FragmentSettings extends Fragment {
         fragment2Activity = (Fragment2Activity) getActivity();
 
         // initializing shared pref
-        final SharedPreferences sharedPref = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
 
         // set old settings data from SharedPref
-        gps_interval.setProgress(sharedPref.getInt(KEY_GPS_FREQ, DEFAULT_GPS_FREQ));
-        txt_gpsInterval.setText(String.valueOf(sharedPref.getInt(KEY_GPS_FREQ, DEFAULT_GPS_FREQ) + 1));
+        gps_interval.setProgress(sharedPref.getInt(KEY_GPS_FREQ, DEFAULT_GPS_FREQ) - 1);
+        txt_gpsInterval.setText(String.valueOf(sharedPref.getInt(KEY_GPS_FREQ, DEFAULT_GPS_FREQ)));
 
         switchTrackingOnOff.setChecked(sharedPref.getBoolean(KEY_ON_OFF, DEFAULT_ON_OFF));
         switchSpeedOnOff.setChecked(sharedPref.getBoolean(KEY_SPEED, DEFAULT_SPEED));
@@ -86,7 +89,7 @@ public class FragmentSettings extends Fragment {
                 // after user setted gps frequency, write it to sharedPref
 
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putInt(KEY_GPS_FREQ, seekBar.getProgress());
+                editor.putInt(KEY_GPS_FREQ, seekBar.getProgress() + 1);
                 editor.apply();
             }
         });
@@ -101,6 +104,9 @@ public class FragmentSettings extends Fragment {
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(KEY_ON_OFF, isChecked);
                 editor.apply();
+
+                if (isChecked)
+                    Toast.makeText(getActivity(), "Tracking is activated", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -117,15 +123,8 @@ public class FragmentSettings extends Fragment {
             }
         });
 
-
         return v;
     }
 
 
-    public void setData(Double longitute, Double latitude) {
-        this.longt = longitute;
-        this.lat = latitude;
-        Log.e("mal", "SetData at Fragment with values " + this.longt + " and " + this.lat);
-//        myText.setText(longt + " " + lat);
-    }
 }

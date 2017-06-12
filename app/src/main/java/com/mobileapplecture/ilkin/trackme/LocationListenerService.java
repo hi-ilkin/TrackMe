@@ -1,5 +1,6 @@
 package com.mobileapplecture.ilkin.trackme;
 
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -40,14 +42,6 @@ public class LocationListenerService extends Service {
             Log.e(TAG, "LocationListener " + provider);
             mLastLocation = new Location(provider);
 
-
-            try {
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                setLOCATION_INTERVAL(sharedPreferences.getInt(KEY_GPS_FREQ, DEFAULT_GPS_FREQ) * 1000);
-                Toast.makeText(getBaseContext(), "New Interval is " + LOCATION_INTERVAL, Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                Log.e(TAG, String.valueOf(e));
-            }
         }
 
         @Override
@@ -115,11 +109,15 @@ public class LocationListenerService extends Service {
         Log.e(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
 
-        // makes a problem if main activty killed
-        if (intent != null) {
-            setLOCATION_INTERVAL(intent.getIntExtra("GPS_Interval", 1) * 1000);
-//            Toast.makeText(getBaseContext(), "Setting interval to " + LOCATION_INTERVAL, Toast.LENGTH_SHORT).show();
+        // first time initializing - bring last data from SharedPreferences
+        try {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            setLOCATION_INTERVAL(sharedPreferences.getInt(KEY_GPS_FREQ, DEFAULT_GPS_FREQ) * 1000);
+            Toast.makeText(getBaseContext(), "Interval Value from SharedPref " + LOCATION_INTERVAL, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.e(TAG, String.valueOf(e));
         }
+
         // Creating DB
         FeedIssuesDBHelper mDbHelper = FeedIssuesDBHelper.getInstance(this);
         db = mDbHelper.getWritableDatabase();
@@ -146,18 +144,39 @@ public class LocationListenerService extends Service {
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
 
+        addNotification(true);
+
         return START_STICKY;
     }
+
+    private void addNotification(boolean isEnabled) {
+
+        NotificationCompat.Builder mTrackingStatusBuilder = new NotificationCompat.Builder(getBaseContext());
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (isEnabled) {
+            mTrackingStatusBuilder.setSmallIcon(R.drawable.ic_tracking_on);
+            mTrackingStatusBuilder.setContentTitle("Tracking is Enabled");
+        } else {
+            mTrackingStatusBuilder.setSmallIcon(R.drawable.ic_tracking_off);
+            mTrackingStatusBuilder.setContentTitle("Tracking is Disabled");
+        }
+
+        mTrackingStatusBuilder.setOngoing(true);
+        mNotificationManager.notify(0, mTrackingStatusBuilder.build());
+    }
+
 
     @Override
     public void onDestroy() {
         Log.e(TAG, "onDestroy at Service");
         super.onDestroy();
 
-//        //TODO: DB - 3
-//        db.close();
-//
-//        //TODO: Should we have this?
+        addNotification(false);
+        //TODO: DB - 3
+        db.close();
+
+       //TODO: Should we have this?
         if (mLocationManager != null) {
             for (LocationListener mLocationListener : mLocationListeners) {
                 try {
@@ -167,6 +186,8 @@ public class LocationListenerService extends Service {
                 }
             }
         }
+
+        Toast.makeText(getBaseContext(),"Tracking is deactivated",Toast.LENGTH_SHORT).show();
     }
 
     private void initializeLocationManager() {
@@ -175,6 +196,7 @@ public class LocationListenerService extends Service {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
         }
+
     }
 
 
